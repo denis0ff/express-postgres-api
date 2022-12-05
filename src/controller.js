@@ -1,72 +1,84 @@
-const { Pool } = require('pg')
-
-const pool = new Pool({
-  user: 'client',
-  host: 'localhost',
-  database: 'meetups',
-  password: 'Yjz,hm2022',
-  port: 5432,
-})
+const schema = require('./schema')
+const {
+  selectAll,
+  selectById,
+  insertData,
+  updateById,
+  deleteById,
+} = require('./queries')
 
 const getMeetups = (req, res) => {
-  pool.query('SELECT * FROM meetups ORDER BY id ASC', (err, data) => {
-    if (err) throw err
-    const { rows } = data
-    res.status(200).json(rows)
-  })
+  selectAll()
+    .then(({ rows }) => res.status(200).json(rows))
+    .catch((err) => {
+      throw err
+    })
 }
 
 const getMeetupById = (req, res) => {
   const id = parseInt(req.params.id)
 
-  pool.query('SELECT * FROM meetups WHERE id = $1', [id], (err, data) => {
-    if (err) {
+  const validationError = schema.id.validate(id).error
+  if (validationError) throw res.status(400).json(validationError.message)
+
+  selectById({ id })
+    .then((data) => {
+      if (data.rowCount === 0)
+        return res.status(404).json('Data with such id was not found')
+      res.status(200).json(data.rows)
+    })
+    .catch((err) => {
       throw err
-    }
-    res.status(200).json(data.rows)
-  })
+    })
 }
 
 const createMeetup = (req, res) => {
-  const { title, description, tags, time } = req.body
+  const validationError = schema.data.validate(req.body).error
+  if (validationError) throw res.status(400).json(validationError.message)
 
-  pool.query(
-    'INSERT INTO meetups (title, description, tags, time) VALUES ($1, $2, $3, $4) RETURNING *',
-    [title, description, tags, time],
-    (err, data) => {
-      if (err) {
-        throw err
-      }
+  insertData(req.body)
+    .then((data) =>
       res.status(201).send(`Meetup added with ID: ${data.rows[0].id}`)
-    }
-  )
+    )
+    .catch((err) => {
+      throw err
+    })
 }
 
 const updateMeetup = (req, res) => {
   const id = parseInt(req.params.id)
-  const { title, description, tags, time } = req.body
 
-  pool.query(
-    'UPDATE meetups SET title = $1, description = $2, tags = $3, time = $4 WHERE id = $5',
-    [title, description, tags, time, id],
-    (err, data) => {
-      if (err) {
-        throw err
-      }
-      res.status(200).send(`Meetup modified with ID: ${id}`)
-    }
-  )
+  const validationError =
+    schema.data.validate(req.body).error || schema.id.validate(id).error
+
+  if (validationError) throw res.status(400).json(validationError.message)
+
+  selectById({ id })
+    .then((data) => {
+      if (data.rowCount === 0)
+        return res.status(404).json('Data with such id was not found')
+      updateById({ ...req.body, id })
+        .then(() => res.status(200).send(`Meetup modified with ID: ${id}`))
+        .catch((err) => {
+          throw err
+        })
+    })
+    .catch((err) => {
+      throw err
+    })
 }
 
 const deleteMeetup = (req, res) => {
   const id = parseInt(req.params.id)
 
-  pool.query('DELETE FROM meetups WHERE id = $1', [id], (err) => {
-    if (err) {
+  const validationError = schema.id.validate(id).error
+  if (validationError) throw res.status(400).json(validationError.message)
+
+  deleteById({ id })
+    .then(() => res.status(204).send(`Meetup deleted with ID: ${id}`))
+    .catch((err) => {
       throw err
-    }
-    res.status(200).send(`Meetup deleted with ID: ${id}`)
-  })
+    })
 }
 
 module.exports = {
