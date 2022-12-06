@@ -8,7 +8,18 @@ const pool = new Pool({
   port: 5432,
 })
 
-const selectAll = () => pool.query('SELECT * FROM meetups ORDER BY id ASC')
+const selectAll = (data) => {
+  const title = data.title || ''
+  const description = data.description || ''
+  const orderBy = data.orderBy || 'id'
+  const order = data.order || 'ASC'
+  const limit = data.limit || 'ALL'
+  const offset = data.page && data.limit ? data.page * limit : '0'
+  return pool.query(
+    `SELECT * FROM meetups WHERE title ~* $1 AND description ~* $2 ORDER BY ${orderBy} ${order} LIMIT ${limit} OFFSET $3`,
+    [title, description, offset]
+  )
+}
 
 const selectById = (data) => {
   const { id } = data
