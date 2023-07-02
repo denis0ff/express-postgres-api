@@ -1,4 +1,5 @@
 import express from 'express';
+
 import { description } from '../../package.json';
 
 import {
@@ -8,6 +9,7 @@ import {
   getAllMeetups,
   getMeetupById,
 } from './controller';
+import { authenticateToken } from './middleware/auth-middleware';
 
 import {
   validateCreateMeetup,
@@ -23,14 +25,26 @@ export function initServer() {
 
   app.use(express.json());
 
-  app.get('/', (_, res) => {
-    res.json({ info: 'Node.js, Express, and Postgres API' });
-  });
-  app.get('/meetups', validateGetAllMeetups, getAllMeetups);
-  app.get('/meetups/:id', validateGetMeetupById, getMeetupById);
-  app.post('/meetups', validateCreateMeetup, createMeetup);
-  app.put('/meetups/:id', validateUpdateMeetup, updateMeetup);
-  app.delete('/meetups/:id', validateDeleteMeetup, deleteMeetup);
+  app.get('/meetups', validateGetAllMeetups, authenticateToken, getAllMeetups);
+  app.get(
+    '/meetups/:id',
+    validateGetMeetupById,
+    authenticateToken,
+    getMeetupById
+  );
+  app.post('/meetups', validateCreateMeetup, authenticateToken, createMeetup);
+  app.put(
+    '/meetups/:id',
+    validateUpdateMeetup,
+    authenticateToken,
+    updateMeetup
+  );
+  app.delete(
+    '/meetups/:id',
+    validateDeleteMeetup,
+    authenticateToken,
+    deleteMeetup
+  );
 
   app.listen(port, () => {
     console.log(`${description} running on port ${port}.`);

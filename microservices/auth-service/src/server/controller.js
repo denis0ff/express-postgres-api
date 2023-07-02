@@ -1,9 +1,9 @@
-import { generateToken } from './middleware/auth-middleware';
 import {
   authorizeUserQuery,
   insertUserQuery,
   selectByUsername,
 } from './queries';
+import { setAuthCookie } from './utils';
 
 export const authorizeUser = async (req, res) => {
   try {
@@ -13,7 +13,7 @@ export const authorizeUser = async (req, res) => {
       return res.status(401).send('Invalid login or password');
     }
 
-    res.json({ token: generateToken(rows[0]) });
+    setAuthCookie(res, rows[0])
   } catch (err) {
     res.status(500).json(err.toString());
   }
@@ -29,7 +29,7 @@ export const registerUser = async (req, res) => {
 
     await insertUserQuery(req.body);
 
-    res.json({ token: generateToken(req.body) });
+    setAuthCookie(res, req.body)
   } catch (err) {
     res.status(500).json(err.toString());
   }

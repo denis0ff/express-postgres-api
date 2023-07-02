@@ -1,4 +1,5 @@
 import express from 'express';
+import cookieParser from 'cookie-parser';
 import { description } from '../../package.json';
 
 import { authorizeUser, getUserInfo, registerUser } from './controller';
@@ -10,10 +11,11 @@ export function initServer() {
   const port = process.env.PORT || 4000;
 
   app.use(express.json());
+  app.use(cookieParser());
 
   app.post('/login', validateUserCredentials, authorizeUser);
   app.post('/register', validateUserCredentials, registerUser);
-  app.get('/profile', authenticateToken, getUserInfo);
+  app.get('/verify', authenticateToken, getUserInfo);
 
   app.listen(port, () => {
     console.log(`${description} running on port ${port}.`);
