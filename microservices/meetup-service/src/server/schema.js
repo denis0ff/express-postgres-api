@@ -7,7 +7,11 @@ export const bodyParams = Joi.object().keys({
   time: Joi.date().greater('now').iso().required().label('Date'),
 });
 
-export const idParam = Joi.number().required().label('Id');
+export const idParam = Joi.number()
+  .required()
+  .positive()
+  .max(999999999)
+  .label('Id');
 
 export const queryParams = Joi.object().keys({
   title: Joi.string().max(60).label('Title'),

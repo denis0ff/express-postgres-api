@@ -8,7 +8,7 @@ const pool = new Pool({
   port: 5432,
 });
 
-export const selectAll = (data) => {
+export const selectAllQuery = (data) => {
   const {
     title = '',
     description = '',
@@ -24,11 +24,11 @@ export const selectAll = (data) => {
   );
 };
 
-export const selectById = (data) => {
+export const selectByIdQuery = (data) => {
   return pool.query('SELECT * FROM meetups WHERE id = $1', [data.id]);
 };
 
-export const insertData = (data) => {
+export const insertMeetupQuery = (data) => {
   const { title, description, tags, time } = data;
 
   return pool.query(
@@ -37,7 +37,7 @@ export const insertData = (data) => {
   );
 };
 
-export const updateById = (data) => {
+export const updateByIdQuery = (data) => {
   const { title, description, tags, time, id } = data;
 
   return pool.query(
@@ -46,6 +46,6 @@ export const updateById = (data) => {
   );
 };
 
-export const deleteById = (data) => {
+export const deleteByIdQuery = (data) => {
   return pool.query('DELETE FROM meetups WHERE id = $1', [data.id]);
 };

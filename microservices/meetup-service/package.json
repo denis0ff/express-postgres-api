@@ -1,7 +1,7 @@
 {
-  "name": "express-postgres-api",
+  "name": "meetup-service",
   "version": "1.0.0",
-  "description": "",
+  "description": "Meetup API",
   "main": "index.js",
   "scripts": {
     "start": "nodemon -r esm src/index.js",

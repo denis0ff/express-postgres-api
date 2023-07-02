@@ -1,83 +1,66 @@
-import { queryParams, idParam, bodyParams } from './schema';
 import {
-  selectAll,
-  selectById,
-  insertData,
-  updateById,
-  deleteById,
+  selectAllQuery,
+  selectByIdQuery,
+  insertMeetupQuery,
+  updateByIdQuery,
+  deleteByIdQuery,
 } from './queries';
 
-export const getMeetup = (req, res) => {
-  if (req.query.id) getMeetupById(req, res);
-  else selectAll(req.query)
-    .then(({ rows }) => res.status(200).json(rows))
-    .catch((err) => {
-      throw err;
-    });
+export const getAllMeetups = async (req, res) => {
+  try {
+    const { rows } = await selectAllQuery(req.query);
+    res.status(200).json(rows);
+  } catch (err) {
+    res.status(500).json(err.toString());
+  }
 };
 
-export const getMeetupById = (req, res) => {
-  const id = parseInt(req.query.id);
+export const getMeetupById = async (req, res) => {
+  try {
+    const { rowCount, rows } = await selectByIdQuery({ id: parseInt(req.params.id) });
 
-  const validationError = idParam.validate(id).error;
-  if (validationError) throw res.status(400).json(validationError.message);
+    if (rowCount === 0) {
+      return res.status(404).json('Data with such id was not found');
+    }
 
-  selectById({ id })
-    .then((data) => {
-      if (data.rowCount === 0)
-        return res.status(404).json('Data with such id was not found');
-      res.status(200).json(data.rows);
-    })
-    .catch((err) => {
-      throw err;
-    });
+    res.status(200).json(rows);
+  } catch (err) {
+    res.status(500).json(err.toString());
+  }
 };
 
-export const createMeetup = (req, res) => {
-  const validationError = bodyParams.validate(req.body).error;
-  if (validationError) throw res.status(400).json(validationError.message);
+export const createMeetup = async (req, res) => {
+  try {
+    const { rows } = await insertMeetupQuery(req.body);
 
-  insertData(req.body)
-    .then((data) =>
-      res.status(201).send(`Meetup added with ID: ${data.rows[0].id}`)
-    )
-    .catch((err) => {
-      throw err;
-    });
+    res.status(201).send(`Meetup added with ID: ${rows[0].id}`);
+  } catch (err) {
+    res.status(500).json(err.toString());
+  }
 };
 
-export const updateMeetup = (req, res) => {
-  const id = parseInt(req.params.id);
+export const updateMeetup = async (req, res) => {
+  try {
+    const { rowCount } = await selectById({ id: parseInt(req.params.id) });
 
-  const validationError =
-    bodyParams.validate(req.body).error || idParam.validate(id).error;
+    if (rowCount === 0) {
+      return res.status(404).json('Data with such id was not found');
+    }
 
-  if (validationError) throw res.status(400).json(validationError.message);
+    await updateByIdQuery({ ...req.body, id });
 
-  selectById({ id })
-    .then((data) => {
-      if (data.rowCount === 0)
-        return res.status(404).json('Data with such id was not found');
-      updateById({ ...req.body, id })
-        .then(() => res.status(200).send(`Meetup modified with ID: ${id}`))
-        .catch((err) => {
-          throw err;
-        });
-    })
-    .catch((err) => {
-      throw err;
-    });
+    res.status(200).send(`Meetup modified with ID: ${req.params.id}`);
+  } catch (err) {
+    res.status(500).json(err.toString());
+  }
 };
 
-export const deleteMeetup = (req, res) => {
-  const id = parseInt(req.params.id);
+export const deleteMeetup = async (req, res) => {
+  try {
+    await deleteByIdQuery({ id: parseInt(req.params.id) });
 
-  const validationError = idParam.validate(id).error;
-  if (validationError) throw res.status(400).json(validationError.message);
-
-  deleteById({ id })
-    .then(() => res.status(204).send(`Meetup deleted with ID: ${id}`))
-    .catch((err) => {
-      throw err;
-    });
+    res.status(204).send(`Meetup deleted with ID: ${req.params.id}`);
+  } catch (err) {
+    res.status(500).json(err.toString());
+  }
 };

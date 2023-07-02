@@ -1,16 +1,21 @@
-"use strict";
+'use strict';
 
-Object.defineProperty(exports, "__esModule", {
-  value: true
+Object.defineProperty(exports, '__esModule', {
+  value: true,
 });
-exports.updateById = exports.selectById = exports.selectAll = exports.insertData = exports.deleteById = void 0;
-var _pg = require("pg");
+exports.updateById =
+  exports.selectById =
+  exports.selectAll =
+  exports.insertData =
+  exports.deleteById =
+    void 0;
+var _pg = require('pg');
 var pool = new _pg.Pool({
   user: 'client',
   host: 'localhost',
   database: 'meetups',
   password: 'Yjz,hm2022',
-  port: 5432
+  port: 5432,
 });
 var selectAll = function selectAll(data) {
   var _data$title = data.title,
@@ -24,7 +29,13 @@ var selectAll = function selectAll(data) {
     _data$limit = data.limit,
     limit = _data$limit === void 0 ? 'ALL' : _data$limit;
   var offset = data.page && data.limit ? data.page * data.limit : '0';
-  return pool.query("SELECT * FROM meetups WHERE title ~* $1 AND description ~* $2 ORDER BY ".concat(orderBy, " ").concat(order, " LIMIT ").concat(limit, " OFFSET $3"), [title, description, offset]);
+  return pool.query(
+    'SELECT * FROM meetups WHERE title ~* $1 AND description ~* $2 ORDER BY '
+      .concat(orderBy, ' ')
+      .concat(order, ' LIMIT ')
+      .concat(limit, ' OFFSET $3'),
+    [title, description, offset]
+  );
 };
 exports.selectAll = selectAll;
 var selectById = function selectById(data) {
@@ -36,7 +47,10 @@ var insertData = function insertData(data) {
     description = data.description,
     tags = data.tags,
     time = data.time;
-  return pool.query("INSERT INTO meetups (title, description, tags, time) VALUES ($1, $2, $3, $4) RETURNING *", [title, description, tags, time]);
+  return pool.query(
+    'INSERT INTO meetups (title, description, tags, time) VALUES ($1, $2, $3, $4) RETURNING *',
+    [title, description, tags, time]
+  );
 };
 exports.insertData = insertData;
 var updateById = function updateById(data) {
@@ -45,7 +59,10 @@ var updateById = function updateById(data) {
     tags = data.tags,
     time = data.time,
     id = data.id;
-  return pool.query('UPDATE meetups SET title = $1, description = $2, tags = $3, time = $4 WHERE id = $5', [title, description, tags, time, id]);
+  return pool.query(
+    'UPDATE meetups SET title = $1, description = $2, tags = $3, time = $4 WHERE id = $5',
+    [title, description, tags, time, id]
+  );
 };
 exports.updateById = updateById;
 var deleteById = function deleteById(data) {
