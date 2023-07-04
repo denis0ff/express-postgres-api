@@ -2,10 +2,12 @@ import http from 'http';
 
 export async function authenticateToken(req, res, next) {
   const request = http.get(
-    'http://localhost:4000/verify',
     {
+      host: process.env.AUTH_HOST || 'localhost',
+      port: process.env.AUTH_PORT || 4000,
+      path: '/verify',
       headers: {
-        Cookie: req.headers.cookie,
+        Cookie: req.headers.cookie || '',
       },
     },
     ({ statusCode, statusMessage }) => {
@@ -16,5 +18,6 @@ export async function authenticateToken(req, res, next) {
       }
     }
   );
+
   request.end();
 }

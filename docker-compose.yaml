@@ -1,0 +1,62 @@
+version: '3.5'
+
+networks:
+  meetup_network:
+
+volumes:
+  data:
+    external: false
+
+services:
+  db_postgres:
+    container_name: db_postgres
+    ports:
+      - "5000:5432"
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=${POSTGRES_DB}
+    image: postgres:14.3-alpine
+    volumes:
+      - ./init-tables.sql:/docker-entrypoint-initdb.d/init.sql
+      - data:/var/lib/postgresql/data
+    networks:
+      - meetup_network
+  auth_service:
+    container_name: auth_service
+    ports:
+      - "4000:4000"
+    build:
+      context: ./microservices/auth-service
+      dockerfile: Dockerfile
+    environment:
+      - PORT=4000
+      - DB_USER=${POSTGRES_USER}
+      - DB_PASSWORD=${POSTGRES_PASSWORD}
+      - DB_HOST=db_postgres
+      - DB_PORT=${POSTGRES_PORT}
+      - DB_DATABASE=${POSTGRES_DB}
+    networks:
+      - meetup_network
+    depends_on:
+      - db_postgres
+  meetup_service:
+    container_name: meetup_service
+    ports:
+      - "3000:3000"
+    build:
+      context: ./microservices/meetup-service
+      dockerfile: Dockerfile
+    environment:
+      - PORT=3000
+      - AUTH_HOST=auth_service
+      - AUTH_PORT=4000
+      - DB_USER=${POSTGRES_USER}
+      - DB_PASSWORD=${POSTGRES_PASSWORD}
+      - DB_HOST=db_postgres
+      - DB_PORT=${POSTGRES_PORT}
+      - DB_DATABASE=${POSTGRES_DB}
+    networks:
+      - meetup_network
+    depends_on:
+      - db_postgres

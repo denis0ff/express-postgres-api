@@ -6,9 +6,10 @@ import { authorizeUser, getUserInfo, registerUser } from './controller';
 import { authenticateToken } from './middleware/auth-middleware';
 import { validateUserCredentials } from './middleware/validate-middleware';
 
+const port = process.env.PORT || 4000;
+
 export function initServer() {
   const app = express();
-  const port = process.env.PORT || 4000;
 
   app.use(express.json());
   app.use(cookieParser());

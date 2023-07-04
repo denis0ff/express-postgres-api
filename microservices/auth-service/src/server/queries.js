@@ -1,11 +1,11 @@
 import { Pool } from 'pg';
 
 const pool = new Pool({
-  user: 'client',
-  host: 'localhost',
-  database: 'meetups',
-  password: 'Yjz,hm2022',
-  port: 5432,
+  user: process.env.DB_USER || 'client',
+  password: process.env.DB_PASSWORD || 'Yjz,hm2022',
+  host: process.env.DB_HOST || 'localhost',
+  port: process.env.DB_PORT || 5432,
+  database: process.env.DB_DATABASE || 'meetups',
 });
 
 export const authorizeUserQuery = (data) => {

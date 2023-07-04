@@ -19,9 +19,10 @@ import {
   validateUpdateMeetup,
 } from './middleware/validate-middleware';
 
+const port = process.env.PORT || 3000;
+
 export function initServer() {
   const app = express();
-  const port = process.env.PORT || 3000;
 
   app.use(express.json());
 
