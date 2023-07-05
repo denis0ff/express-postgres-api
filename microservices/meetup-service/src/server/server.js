@@ -8,6 +8,7 @@ import {
   deleteMeetup,
   getAllMeetups,
   getMeetupById,
+  getMeetupReport,
 } from './controller';
 import { authenticateToken } from './middleware/auth-middleware';
 
@@ -46,6 +47,7 @@ export function initServer() {
     authenticateToken,
     deleteMeetup
   );
+  app.get('/report', validateGetAllMeetups, authenticateToken, getMeetupReport)
 
   app.listen(port, () => {
     console.log(`${description} running on port ${port}.`);

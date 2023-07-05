@@ -15,7 +15,7 @@ export const authorizeUser = async (req, res) => {
 
     setAuthCookie(res, rows[0])
   } catch (err) {
-    res.status(500).json(err.toString());
+    console.log(err);
   }
 };
 
@@ -31,7 +31,7 @@ export const registerUser = async (req, res) => {
 
     setAuthCookie(res, req.body)
   } catch (err) {
-    res.status(500).json(err.toString());
+    console.log(err);
   }
 };
 
