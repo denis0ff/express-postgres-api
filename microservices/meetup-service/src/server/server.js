@@ -47,7 +47,7 @@ export function initServer() {
     authenticateToken,
     deleteMeetup
   );
-  app.get('/report', validateGetAllMeetups, authenticateToken, getMeetupReport)
+  app.get('/report', validateGetAllMeetups, authenticateToken, getMeetupReport);
 
   app.listen(port, () => {
     console.log(`${description} running on port ${port}.`);

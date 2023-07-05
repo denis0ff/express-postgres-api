@@ -5,6 +5,8 @@ import {
   updateByIdQuery,
   deleteByIdQuery,
 } from './queries';
+import fs from 'fs';
+
 import { writeCsvReport } from './utils';
 
 export const getAllMeetups = async (req, res) => {
@@ -72,9 +74,11 @@ export const getMeetupReport = async (req, res) => {
   try {
     const { rows } = await selectAllQuery(req.query);
 
-    await writeCsvReport(rows)
+    await writeCsvReport(rows);
 
-    res.download('report.csv');
+    res.download('report.csv', () => {
+      fs.unlink('report.csv', () => {});
+    });
   } catch (err) {
     console.log(err);
   }

@@ -9,7 +9,7 @@ export const writeCsvReport = async (rows) => {
       { id: 'date', title: 'Дата проведения' },
       { id: 'tags', title: 'Тэги' },
     ],
-    encoding: 'utf-8'
+    encoding: 'utf-8',
   });
 
   await csvWriter.writeRecords(rows);
