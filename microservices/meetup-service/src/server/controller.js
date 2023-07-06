@@ -6,8 +6,21 @@ import {
   deleteByIdQuery,
 } from './queries';
 import fs from 'fs';
+import { Client } from '@elastic/elasticsearch';
 
 import { writeCsvReport } from './utils';
+
+const ES_PORT = process.env.ES_PORT || 9200;
+const ES_HOST = process.env.ES_HOST || 'localhost';
+
+const client = new Client({
+  node: `http://${ES_HOST}:${ES_PORT}`,
+  maxRetries: 2,
+  requestTimeout: 3000,
+  ssl: {
+    rejectUnauthorized: false,
+  },
+});
 
 export const getAllMeetups = async (req, res) => {
   try {
@@ -15,6 +28,7 @@ export const getAllMeetups = async (req, res) => {
     res.status(200).json(rows);
   } catch (err) {
     console.log(err);
+    res.status(500).json(err.toString());
   }
 };
 
@@ -31,42 +45,74 @@ export const getMeetupById = async (req, res) => {
     res.status(200).json(rows);
   } catch (err) {
     console.log(err);
+    res.status(500).json(err.toString());
   }
 };
 
 export const createMeetup = async (req, res) => {
   try {
-    const { rows } = await insertMeetupQuery(req.body);
+    const {
+      rows: [{ id, title, description, time, tags }],
+    } = await insertMeetupQuery(req.body);
 
-    res.status(201).send(`Meetup added with ID: ${rows[0].id}`);
+    await client.index({
+      index: 'meetups',
+      id,
+      body: {
+        title,
+        description,
+        time,
+        tags,
+      },
+    });
+
+    res.status(201).send(`Meetup added with ID: ${id}`);
   } catch (err) {
     console.log(err);
+    res.status(500).json(err.toString());
   }
 };
 
 export const updateMeetup = async (req, res) => {
+  const id = parseInt(req.params.id);
   try {
-    const { rowCount } = await selectById({ id: parseInt(req.params.id) });
+    const { rowCount } = await selectByIdQuery({ id });
 
     if (rowCount === 0) {
       return res.status(404).json('Data with such id was not found');
     }
 
+    await client.update({
+      index: 'meetups',
+      id,
+      body: {
+        doc: req.body,
+      },
+    });
+
     await updateByIdQuery({ ...req.body, id });
 
-    res.status(200).send(`Meetup modified with ID: ${req.params.id}`);
+    res.status(200).send(`Meetup modified with ID: ${id}`);
   } catch (err) {
     console.log(err);
+    res.status(500).json(err.toString());
   }
 };
 
 export const deleteMeetup = async (req, res) => {
+  const id = parseInt(req.params.id);
   try {
-    await deleteByIdQuery({ id: parseInt(req.params.id) });
+    await client.delete({
+      index: 'meetups',
+      id: id,
+    });
 
-    res.status(204).send(`Meetup deleted with ID: ${req.params.id}`);
+    await deleteByIdQuery({ id });
+
+    res.status(204).send(`Meetup deleted with ID: ${id}`);
   } catch (err) {
     console.log(err);
+    res.status(500).json(err.toString());
   }
 };
 
@@ -81,5 +127,34 @@ export const getMeetupReport = async (req, res) => {
     });
   } catch (err) {
     console.log(err);
+    res.status(500).json(err.toString());
+  }
+};
+
+export const getMeetupBySearch = async (req, res) => {
+  try {
+    const { searchString } = req.query;
+
+    const {
+      body: {
+        hits: { hits },
+      },
+    } = await client.search({
+      index: 'meetups',
+      body: {
+        query: {
+          multi_match: {
+            query: searchString,
+            fields: ['title', 'description', 'tags'],
+          },
+        },
+      },
+    });
+
+    const meetups = hits.map((hit) => hit._source);
+    res.json(meetups);
+  } catch (err) {
+    console.log(err);
+    res.status(500).json(err.toString());
   }
 };

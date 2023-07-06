@@ -4,14 +4,8 @@
     "ecmaVersion": 12,
     "sourceType": "module"
   },
-  "extends": [
-    "eslint:recommended",
-    "prettier",
-    "plugin:prettier/recommended"
-  ],
-  "plugins": [
-    "prettier"
-  ],
+  "extends": ["eslint:recommended", "prettier", "plugin:prettier/recommended"],
+  "plugins": ["prettier"],
   "env": {
     "es2021": true,
     "node": true
@@ -21,7 +15,7 @@
     "prettier/prettier": [
       "error",
       {
-        "endOfLine": "sourceType"
+        "endOfLine": "auto"
       }
     ]
   }

@@ -23,3 +23,7 @@ export const queryParams = Joi.object().keys({
   limit: Joi.string().regex(/^\d+$/).label('Page limit (limit)'),
   page: Joi.string().regex(/^\d+$/).label('Page number (page)'),
 });
+
+export const searchMeetupsQuerySchema = Joi.object().keys({
+  searchString: Joi.string().max(300).label('Search string'),
+});

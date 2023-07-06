@@ -6,12 +6,16 @@ networks:
 volumes:
   data:
     external: false
+  elasticsearch-data:
+    driver: local
+  kibana-data:
+    driver: local
 
 services:
   db_postgres:
     container_name: db_postgres
     ports:
-      - "5000:5432"
+      - '5000:${POSTGRES_PORT}'
     environment:
       - POSTGRES_USER=${POSTGRES_USER}
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
@@ -25,12 +29,12 @@ services:
   auth_service:
     container_name: auth_service
     ports:
-      - "4000:4000"
+      - '${AUTH_PORT}:${AUTH_PORT}'
     build:
       context: ./microservices/auth-service
       dockerfile: Dockerfile
     environment:
-      - PORT=4000
+      - PORT=${AUTH_PORT}
       - DB_USER=${POSTGRES_USER}
       - DB_PASSWORD=${POSTGRES_PASSWORD}
       - DB_HOST=db_postgres
@@ -43,20 +47,55 @@ services:
   meetup_service:
     container_name: meetup_service
     ports:
-      - "3000:3000"
+      - '${MEETUP_PORT}:${MEETUP_PORT}'
     build:
       context: ./microservices/meetup-service
       dockerfile: Dockerfile
     environment:
-      - PORT=3000
+      - PORT=${MEETUP_PORT}
       - AUTH_HOST=auth_service
-      - AUTH_PORT=4000
+      - AUTH_PORT=${AUTH_PORT}
       - DB_USER=${POSTGRES_USER}
       - DB_PASSWORD=${POSTGRES_PASSWORD}
       - DB_HOST=db_postgres
       - DB_PORT=${POSTGRES_PORT}
       - DB_DATABASE=${POSTGRES_DB}
+      - ES_PORT=${ES_PORT}
+      - ES_HOST=elasticsearch
     networks:
       - meetup_network
     depends_on:
       - db_postgres
+      - elasticsearch
+  elasticsearch:
+    container_name: elasticsearch
+    image: docker.elastic.co/elasticsearch/elasticsearch:${STACK_VERSION}
+    volumes:
+      - elasticsearch-data:/usr/share/elasticsearch/data
+    environment:
+      - xpack.security.enabled=false
+      - discovery.type=single-node
+    ports:
+      - '${ES_PORT}:${ES_PORT}'
+    restart: always
+    networks:
+      - meetup_network
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+  kibana:
+    container_name: kibana
+    image: docker.elastic.co/kibana/kibana:${STACK_VERSION}
+    volumes:
+      - kibana-data:/usr/share/kibana/data
+    environment:
+      - ELASTICSEARCH_HOSTS=http://elasticsearch:${ES_PORT}
+      - KIBANA_PORT=${KB_PORT}
+    networks:
+      - meetup_network
+    depends_on:
+      - elasticsearch
+    ports:
+      - '${KB_PORT}:${KB_PORT}'
+    restart: always

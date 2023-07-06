@@ -13,9 +13,10 @@ export const authorizeUser = async (req, res) => {
       return res.status(401).send('Invalid login or password');
     }
 
-    setAuthCookie(res, rows[0])
+    setAuthCookie(res, rows[0]);
   } catch (err) {
     console.log(err);
+    res.status(500).json(err.toString());
   }
 };
 
@@ -29,9 +30,10 @@ export const registerUser = async (req, res) => {
 
     await insertUserQuery(req.body);
 
-    setAuthCookie(res, req.body)
+    setAuthCookie(res, req.body);
   } catch (err) {
     console.log(err);
+    res.status(500).json(err.toString());
   }
 };
 

@@ -1,6 +1,6 @@
 import jwt from 'jsonwebtoken';
 
-const cookieMaxAge = 1000 * 60 * 5;
+const cookieMaxAge = 1000 * 60 * 60;
 
 export const setAuthCookie = (res, credentials) => {
   const accessToken = generateToken(credentials);

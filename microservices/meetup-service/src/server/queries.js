@@ -1,11 +1,11 @@
 import { Pool } from 'pg';
 
 const pool = new Pool({
-  user: process.env.DB_USER || 'client',
-  password: process.env.DB_PASSWORD || 'Yjz,hm2022',
+  user: process.env.DB_USER || 'root',
+  password: process.env.DB_PASSWORD || 'admin',
   host: process.env.DB_HOST || 'localhost',
-  port: process.env.DB_PORT || 5432,
-  database: process.env.DB_DATABASE || 'meetups',
+  port: process.env.DB_PORT || 5000,
+  database: process.env.DB_DATABASE || 'db_meetup',
 });
 
 export const selectAllQuery = (data) => {

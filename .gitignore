@@ -1,10 +1,6 @@
-node_modules
-/.pnp
-.pnp.js
-
-/coverage
-
-/build
+node_modules*
+.pnp*
+.pnp.js*
 
 .DS_Store
 .env.local

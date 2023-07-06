@@ -1,4 +1,9 @@
-import { bodyParams, idParam, queryParams } from '../schema';
+import {
+  bodyParams,
+  idParam,
+  queryParams,
+  searchMeetupsQuerySchema,
+} from '../schema';
 
 export const validateGetAllMeetups = (req, res, next) => {
   const validateError = validateRequestParams([
@@ -41,6 +46,16 @@ export const validateUpdateMeetup = (req, res, next) => {
 };
 
 export const validateDeleteMeetup = validateGetMeetupById;
+
+export const validateSearchMeetup = (req, res, next) => {
+  const validateError = validateRequestParams([
+    { schema: searchMeetupsQuerySchema, value: req.query },
+  ]);
+
+  checkOnError(res, validateError);
+
+  next();
+};
 
 function checkOnError(res, validateError) {
   if (validateError) {
