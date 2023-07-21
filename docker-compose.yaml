@@ -26,6 +26,7 @@ services:
       - data:/var/lib/postgresql/data
     networks:
       - meetup_network
+    mem_limit: 512m
   auth_service:
     container_name: auth_service
     ports:
@@ -44,6 +45,7 @@ services:
       - meetup_network
     depends_on:
       - db_postgres
+    mem_limit: 256m
   meetup_service:
     container_name: meetup_service
     ports:
@@ -67,6 +69,7 @@ services:
     depends_on:
       - db_postgres
       - elasticsearch
+    mem_limit: 256m
   elasticsearch:
     container_name: elasticsearch
     image: docker.elastic.co/elasticsearch/elasticsearch:${STACK_VERSION}
@@ -84,6 +87,7 @@ services:
       memlock:
         soft: -1
         hard: -1
+    mem_limit: 1g
   kibana:
     container_name: kibana
     image: docker.elastic.co/kibana/kibana:${STACK_VERSION}
@@ -99,3 +103,4 @@ services:
     ports:
       - '${KB_PORT}:${KB_PORT}'
     restart: always
+    mem_limit: 1g

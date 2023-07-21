@@ -5,6 +5,7 @@ import { description } from '../../package.json';
 import { authorizeUser, getUserInfo, registerUser } from './controller';
 import { authenticateToken } from './middleware/auth-middleware';
 import { validateUserCredentials } from './middleware/validate-middleware';
+import { errorHandler } from './middleware/error-middleware';
 
 const port = process.env.PORT || 4000;
 
@@ -13,6 +14,7 @@ export function initServer() {
 
   app.use(express.json());
   app.use(cookieParser());
+  app.use(errorHandler);
 
   app.post('/login', validateUserCredentials, authorizeUser);
   app.post('/register', validateUserCredentials, registerUser);

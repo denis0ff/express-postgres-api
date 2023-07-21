@@ -1,4 +1,5 @@
 import express from 'express';
+import cookieParser from 'cookie-parser';
 
 import { description } from '../../package.json';
 
@@ -21,6 +22,7 @@ import {
   validateSearchMeetup,
   validateUpdateMeetup,
 } from './middleware/validate-middleware';
+import { errorHandler } from './middleware/error-middleware';
 
 const port = process.env.PORT || 3000;
 
@@ -28,34 +30,17 @@ export function initServer() {
   const app = express();
 
   app.use(express.json());
+  app.use(cookieParser());
+  app.use(authenticateToken);
+  app.use(errorHandler);
 
-  app.get('/meetups', validateGetAllMeetups, authenticateToken, getAllMeetups);
-  app.get(
-    '/meetups/:id',
-    validateGetMeetupById,
-    authenticateToken,
-    getMeetupById
-  );
-  app.post('/meetups', validateCreateMeetup, authenticateToken, createMeetup);
-  app.put(
-    '/meetups/:id',
-    validateUpdateMeetup,
-    authenticateToken,
-    updateMeetup
-  );
-  app.delete(
-    '/meetups/:id',
-    validateDeleteMeetup,
-    authenticateToken,
-    deleteMeetup
-  );
-  app.get('/report', validateGetAllMeetups, authenticateToken, getMeetupReport);
-  app.get(
-    '/search',
-    validateSearchMeetup,
-    authenticateToken,
-    getMeetupBySearch
-  );
+  app.get('/meetups', validateGetAllMeetups, getAllMeetups);
+  app.get('/meetups/:id', validateGetMeetupById, getMeetupById);
+  app.post('/meetups', validateCreateMeetup, createMeetup);
+  app.put('/meetups/:id', validateUpdateMeetup, updateMeetup);
+  app.delete('/meetups/:id', validateDeleteMeetup, deleteMeetup);
+  app.get('/report', validateGetAllMeetups, getMeetupReport);
+  app.get('/search', validateSearchMeetup, getMeetupBySearch);
 
   app.listen(port, () => {
     console.log(`${description} running on port ${port}.`);

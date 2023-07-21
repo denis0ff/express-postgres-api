@@ -22,38 +22,36 @@ const client = new Client({
   },
 });
 
-export const getAllMeetups = async (req, res) => {
+export const getAllMeetups = async (req, res, next) => {
   try {
     const { rows } = await selectAllQuery(req.query);
     res.status(200).json(rows);
   } catch (err) {
-    console.log(err);
-    res.status(500).json(err.toString());
+    next(err);
   }
 };
 
-export const getMeetupById = async (req, res) => {
+export const getMeetupById = async (req, res, next) => {
+  const id = parseInt(req.params.id);
   try {
-    const { rowCount, rows } = await selectByIdQuery({
-      id: parseInt(req.params.id),
-    });
+    const { rowCount, rows } = await selectByIdQuery({ id });
 
     if (rowCount === 0) {
-      return res.status(404).json('Data with such id was not found');
+      return res.status(404).json(`Data with such id: ${id} was not found`);
     }
 
     res.status(200).json(rows);
   } catch (err) {
-    console.log(err);
-    res.status(500).json(err.toString());
+    next(err);
   }
 };
 
-export const createMeetup = async (req, res) => {
+export const createMeetup = async (req, res, next) => {
   try {
+    const userId = req.cookies['userId'];
     const {
       rows: [{ id, title, description, time, tags }],
-    } = await insertMeetupQuery(req.body);
+    } = await insertMeetupQuery({ ...req.body, userId });
 
     await client.index({
       index: 'meetups',
@@ -63,23 +61,32 @@ export const createMeetup = async (req, res) => {
         description,
         time,
         tags,
+        userId,
       },
     });
 
     res.status(201).send(`Meetup added with ID: ${id}`);
   } catch (err) {
-    console.log(err);
-    res.status(500).json(err.toString());
+    next(err);
   }
 };
 
-export const updateMeetup = async (req, res) => {
+export const updateMeetup = async (req, res, next) => {
   const id = parseInt(req.params.id);
+  const userId = req.cookies['userId'];
   try {
-    const { rowCount } = await selectByIdQuery({ id });
+    const { rowCount, rows } = await selectByIdQuery({ id });
 
     if (rowCount === 0) {
       return res.status(404).json('Data with such id was not found');
+    }
+
+    if (String(rows[0]['userid']) !== userId) {
+      return res
+        .status(403)
+        .json(
+          "You don't have permission to update meetup that another user created"
+        );
     }
 
     await client.update({
@@ -94,12 +101,11 @@ export const updateMeetup = async (req, res) => {
 
     res.status(200).send(`Meetup modified with ID: ${id}`);
   } catch (err) {
-    console.log(err);
-    res.status(500).json(err.toString());
+    next(err);
   }
 };
 
-export const deleteMeetup = async (req, res) => {
+export const deleteMeetup = async (req, res, next) => {
   const id = parseInt(req.params.id);
   try {
     await client.delete({
@@ -111,12 +117,11 @@ export const deleteMeetup = async (req, res) => {
 
     res.status(204).send(`Meetup deleted with ID: ${id}`);
   } catch (err) {
-    console.log(err);
-    res.status(500).json(err.toString());
+    next(err);
   }
 };
 
-export const getMeetupReport = async (req, res) => {
+export const getMeetupReport = async (req, res, next) => {
   try {
     const { rows } = await selectAllQuery(req.query);
 
@@ -126,12 +131,11 @@ export const getMeetupReport = async (req, res) => {
       fs.unlink('report.csv', () => {});
     });
   } catch (err) {
-    console.log(err);
-    res.status(500).json(err.toString());
+    next(err);
   }
 };
 
-export const getMeetupBySearch = async (req, res) => {
+export const getMeetupBySearch = async (req, res, next) => {
   try {
     const { searchString } = req.query;
 
@@ -154,7 +158,6 @@ export const getMeetupBySearch = async (req, res) => {
     const meetups = hits.map((hit) => hit._source);
     res.json(meetups);
   } catch (err) {
-    console.log(err);
-    res.status(500).json(err.toString());
+    next(err);
   }
 };

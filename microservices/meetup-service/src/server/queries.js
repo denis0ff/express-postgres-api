@@ -29,11 +29,11 @@ export const selectByIdQuery = (data) => {
 };
 
 export const insertMeetupQuery = (data) => {
-  const { title, description, tags, time } = data;
+  const { title, description, tags, time, userId } = data;
 
   return pool.query(
-    `INSERT INTO meetups (title, description, tags, time) VALUES ($1, $2, $3, $4) RETURNING *`,
-    [title, description, tags, time]
+    `INSERT INTO meetups (title, description, tags, time, userId) VALUES ($1, $2, $3, $4, $5) RETURNING *`,
+    [title, description, tags, time, userId]
   );
 };
 
