@@ -8,7 +8,8 @@ import {
 import fs from 'fs';
 import { Client } from '@elastic/elasticsearch';
 
-import { writeCsvReport } from './utils';
+import { writeCsvReport, writePdfReport } from './utils';
+import PDFDocument from 'pdfkit';
 
 const ES_PORT = process.env.ES_PORT || 9200;
 const ES_HOST = process.env.ES_HOST || 'localhost';
@@ -122,14 +123,29 @@ export const deleteMeetup = async (req, res, next) => {
 };
 
 export const getMeetupReport = async (req, res, next) => {
+  const { type } = req.params;
   try {
     const { rows } = await selectAllQuery(req.query);
 
-    await writeCsvReport(rows);
+    if (type === 'csv') {
+      await writeCsvReport(rows);
 
-    res.download('report.csv', () => {
-      fs.unlink('report.csv', () => {});
-    });
+      res.download('report.csv', () => {
+        fs.unlink('report.csv', () => {});
+      });
+    }
+
+    if (type === 'pdf') {
+      const doc = new PDFDocument();
+
+      await writePdfReport(doc, rows);
+
+      res
+        .setHeader('Content-Type', 'application/pdf')
+        .setHeader('Content-Disposition', 'inline; filename=test.pdf');
+      doc.pipe(res);
+      doc.end();
+    }
   } catch (err) {
     next(err);
   }

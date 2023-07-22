@@ -27,3 +27,8 @@ export const queryParams = Joi.object().keys({
 export const searchMeetupsQuerySchema = Joi.object().keys({
   searchString: Joi.string().max(300).label('Search string'),
 });
+
+export const typeReport = Joi.string()
+  .required()
+  .valid('csv', 'pdf')
+  .label('Report type');

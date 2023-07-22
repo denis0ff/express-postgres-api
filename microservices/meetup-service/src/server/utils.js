@@ -1,4 +1,5 @@
 import { createObjectCsvWriter } from 'csv-writer';
+import path from 'path';
 
 export const writeCsvReport = async (rows) => {
   const csvWriter = createObjectCsvWriter({
@@ -13,4 +14,17 @@ export const writeCsvReport = async (rows) => {
   });
 
   await csvWriter.writeRecords(rows);
+};
+
+export const writePdfReport = async (doc, rows) => {
+  const fontPath = path.join(__dirname, '../../assets/microsoftsansserif.ttf');
+  doc.font(fontPath);
+
+  rows.forEach(({ title = '', description = '', time = '', tags }) => {
+    doc.fontSize(12).text(`Название: ${title}`);
+    doc.fontSize(12).text(`Описание: ${description}`);
+    doc.fontSize(12).text(`Дата проведения: ${time}`);
+    doc.fontSize(12).text(`Тэги: ${tags}`);
+    doc.moveDown();
+  });
 };

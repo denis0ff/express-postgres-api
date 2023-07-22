@@ -19,6 +19,7 @@ import {
   validateDeleteMeetup,
   validateGetAllMeetups,
   validateGetMeetupById,
+  validateGetReport,
   validateSearchMeetup,
   validateUpdateMeetup,
 } from './middleware/validate-middleware';
@@ -39,7 +40,7 @@ export function initServer() {
   app.post('/meetups', validateCreateMeetup, createMeetup);
   app.put('/meetups/:id', validateUpdateMeetup, updateMeetup);
   app.delete('/meetups/:id', validateDeleteMeetup, deleteMeetup);
-  app.get('/report', validateGetAllMeetups, getMeetupReport);
+  app.get('/report/:type', validateGetReport, getMeetupReport);
   app.get('/search', validateSearchMeetup, getMeetupBySearch);
 
   app.listen(port, () => {

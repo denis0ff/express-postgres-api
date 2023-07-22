@@ -3,6 +3,7 @@ import {
   idParam,
   queryParams,
   searchMeetupsQuerySchema,
+  typeReport,
 } from '../schema';
 
 export const validateGetAllMeetups = (req, res, next) => {
@@ -50,6 +51,17 @@ export const validateDeleteMeetup = validateGetMeetupById;
 export const validateSearchMeetup = (req, res, next) => {
   const validateError = validateRequestParams([
     { schema: searchMeetupsQuerySchema, value: req.query },
+  ]);
+
+  checkOnError(res, validateError);
+
+  next();
+};
+
+export const validateGetReport = (req, res, next) => {
+  const validateError = validateRequestParams([
+    { schema: queryParams, value: req.query },
+    { schema: typeReport, value: parseInt(req.params.type) },
   ]);
 
   checkOnError(res, validateError);
